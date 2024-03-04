@@ -7,6 +7,8 @@ WORKDIR /app/backend
 # Copy the backend source code into the container
 COPY backend .
 
+COPY .env /app/backend/.env
+
 # Build the backend executable
 RUN go build -o main .
 
