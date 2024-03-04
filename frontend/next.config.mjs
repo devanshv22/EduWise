@@ -3,7 +3,6 @@ const nextConfig = {
   reactStrictMode: true,
 };
 
-export default {
-  ...nextConfig,
-  distDir: 'build',
-};
+
+export default nextConfig;
+
