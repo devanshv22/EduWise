@@ -7,13 +7,13 @@ WORKDIR /app/backend
 # Copy the backend source code into the container
 COPY backend .
 
-COPY .env /app/backend/.env
-
 # Build the backend executable
 RUN go build -o main .
 
 # Expose port 8080 to the outside world for backend
 EXPOSE 8080
+
+RUN ln -s /app/.env /app/backend/.env
 
 # Define the command to run the backend executable
 CMD ["./main"]
