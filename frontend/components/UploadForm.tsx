@@ -32,7 +32,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ fetchUploadedFiles, onClose, us
 
     const fetchFacultyList = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/faculty');
+            const response = await axios.get('https://eduwise-v2.onrender.com/api/faculty');
             const facultyList = response.data.map((faculty: any) => ({ value: faculty.name, label: faculty.name }));
             facultyList.sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label));
             setFacultyOptions([
@@ -47,7 +47,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ fetchUploadedFiles, onClose, us
 
     const fetchCourseList = async () => {
         try {
-            const response = await axios.get('http://localhost:8080/api/courses');
+            const response = await axios.get('https://eduwise-v2.onrender.com/api/courses');
             const courseList = response.data.map((course: any) => ({ value: course.name, label: course.name }));
             courseList.sort((a: { label: string }, b: { label: string }) => a.label.localeCompare(b.label));
             setCourseOptions([
@@ -68,7 +68,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ fetchUploadedFiles, onClose, us
 
     const handleNewInstructorSubmit = async (newInstructorName: string) => {
         try {
-            await axios.post('http://localhost:8080/api/faculty', { name: newInstructorName });
+            await axios.post('https://eduwise-v2.onrender.com/api/faculty', { name: newInstructorName });
             alert('New instructor added successfully!');
             fetchFacultyList();
             setShowNewInstructorPopup(false);
@@ -80,7 +80,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ fetchUploadedFiles, onClose, us
 
     const handleNewCourseSubmit = async (newCourseName: string) => {
         try {
-            await axios.post('http://localhost:8080/api/courses', { name: newCourseName });
+            await axios.post('https://eduwise-v2.onrender.com/api/courses', { name: newCourseName });
             alert('New course added successfully!');
             fetchCourseList();
             setShowNewCoursePopup(false);
@@ -135,7 +135,7 @@ const UploadForm: React.FC<UploadFormProps> = ({ fetchUploadedFiles, onClose, us
         }
     
         try {
-            await axios.post('http://localhost:8080/api/upload', formData, {
+            await axios.post('https://eduwise-v2.onrender.com/api/upload', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`, // Include JWT token in headers
