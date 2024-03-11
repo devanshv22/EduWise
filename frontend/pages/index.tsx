@@ -7,7 +7,7 @@ const IndexPage: React.FC = () => {
   useEffect(() => {
     const checkLogin = async () => {
       // Perform check if user is logged in
-      const response = await fetch('/api/isLoggedIn');
+      const response = await fetch('http://13.201.23.158:8080/api/isLoggedIn');
 
       if (!response.ok) {
         router.push('/login'); // Redirect to login page if not logged in
