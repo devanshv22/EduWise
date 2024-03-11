@@ -136,7 +136,7 @@ const MainPage: React.FC = () => {
                 </div>
             )}
 
-            <div className="grid gap-16 mt-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+            <div className="grid gap-16 mt-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 justify-items-center">
                 {currentFiles.map((file, index) => (
                     <a href={file.link} download key={index}>
                         <div className="text-center mt-2 bg-gray-100 py-10 rounded-md shadow-md max-w-xs sm:max-w-full">
