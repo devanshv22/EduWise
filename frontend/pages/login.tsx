@@ -96,6 +96,7 @@ const LoginPage: React.FC = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
+      <h1 className="text-5xl text-white font-bold mb-4">EduWise</h1>
       <div className="bg-gray-300 rounded-2xl p-6 mb-4">
         <div className="flex flex-col items-center">
           <h1 className="text-3xl mb-4">Login/Register Page</h1>

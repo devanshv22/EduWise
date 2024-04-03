@@ -139,7 +139,7 @@ const MainPage: React.FC = () => {
             <div className="grid gap-16 mt-2 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
                 {currentFiles.map((file, index) => (
                     <a href={file.link} download key={index}>
-                        <div className="text-center mt-2 bg-gray-100 py-10 rounded-md shadow-md max-w-xs sm:max-w-full">
+                        <div className="text-center mt-2 bg-gray-100 py-10 px-8 rounded-md shadow-md h-40 max-w-xs sm:max-w-full">
                             <h2 className="text-base text-gray-700 font-semibold">{file.courseName}</h2>
                             <p className="text-gray-500 text-xs">{file.type}</p>
                             <p className="text-gray-500 text-xs">Instructor: {file.instructor}, Batch: {file.batch}</p>
