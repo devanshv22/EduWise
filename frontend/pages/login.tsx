@@ -15,7 +15,7 @@ const LoginPage: React.FC = () => {
     setError(null);
   
     try {
-      const response = await fetch('http://13.201.23.158:8080/api/register', {
+      const response = await fetch('http://3.110.204.153:8080/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +43,7 @@ const LoginPage: React.FC = () => {
     setError(null);
   
     try {
-      const response = await fetch('http://13.201.23.158:8080/api/verify', {
+      const response = await fetch('http://3.110.204.153:8080/api/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ const LoginPage: React.FC = () => {
     setError(null);
   
     try {
-      const response = await fetch('http://13.201.23.158:8080/api/login', {
+      const response = await fetch('http://3.110.204.153:8080/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
