@@ -413,22 +413,20 @@ func verifyOTP(c *gin.Context) {
 
 func sendVerificationOTP(email, otp string) error {
 	// SMTP configuration
-	smtpHost := "mmtp.iitk.ac.in"
-	smtpPort := 25
+	smtpHost := "smtp.gmail.com"
+	smtpPort := 587
 	smtpUsername := os.Getenv("SMTP_USERNAME")
 	smtpPassword := os.Getenv("SMTP_PASSWORD")
-	// Sender and recipient email addresses
 	from := "EduWise@iitk.ac.in"
-	to := email
 
 	// Email content
 	subject := "Account Verification OTP"
-	body := fmt.Sprintf("Dear User your verification OTP is: %s", otp)
+	body := fmt.Sprintf("Dear User, your verification OTP is: %s", otp)
 
 	// Constructing email headers
 	headers := make(map[string]string)
 	headers["From"] = from
-	headers["To"] = to
+	headers["To"] = email
 	headers["Subject"] = subject
 	headers["MIME-Version"] = "1.0"
 	headers["Content-Type"] = "text/plain; charset=\"utf-8\""
@@ -440,12 +438,11 @@ func sendVerificationOTP(email, otp string) error {
 	}
 	msg.WriteString("\r\n" + base64.StdEncoding.EncodeToString([]byte(body)))
 
-	// SMTP authentication
+	// Connect to the SMTP server with TLS
 	auth := smtp.PlainAuth("", smtpUsername, smtpPassword, smtpHost)
-
-	// Sending email using SMTP
-	err := smtp.SendMail(fmt.Sprintf("%s:%d", smtpHost, smtpPort), auth, from, []string{to}, msg.Bytes())
+	err := smtp.SendMail(fmt.Sprintf("%s:%d", smtpHost, smtpPort), auth, from, []string{email}, msg.Bytes())
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
 
