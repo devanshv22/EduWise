@@ -31,7 +31,7 @@ const MainPage: React.FC = () => {
 
     const fetchUploadedFiles = async () => {
         try {
-            const response = await axios.get<UploadedFile[]>('http://localhost:8080/api/fetch');
+            const response = await axios.get<UploadedFile[]>('http://13.201.23.158:8080/api/fetch');
             if (response.status === 200) {
                 setUploadedFiles(response.data || []);
                 setFilteredFiles(response.data || []); // Initialize filteredFiles state with all files
