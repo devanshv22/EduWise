@@ -103,7 +103,7 @@ const LoginPage: React.FC = () => {
           <div className="mb-2">
             <input
               type="text"
-              placeholder="Roll Number "
+              placeholder="IITK Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="border text-black rounded-md px-4 py-2 w-72"
