@@ -220,17 +220,18 @@ const LoginPage: React.FC = () => {
               className="border text-black rounded-md px-4 py-2 w-72"
             />
           </div>
-          <div className="mb-2">
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="border text-black rounded-md px-4 py-2 w-72"
-            />
-          </div>
+          
           {!isRegistering && !isForgetting && (
             <>
+              <div className="mb-2">
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="border text-black rounded-md px-4 py-2 w-72"
+                />
+              </div>
               <div className="mb-2">
                 <button onClick={handleLogin} disabled={loading} className="bg-blue-500 text-white px-4 py-2 rounded-md">
                   Login
@@ -246,6 +247,15 @@ const LoginPage: React.FC = () => {
           )}
           {isRegistering && (
             <>
+            <div className="mb-2">
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="border text-black rounded-md px-4 py-2 w-72"
+                />
+              </div>
               <div className="mb-2">
                 <button onClick={handleRegister} disabled={loading} className="bg-blue-500 text-white px-4 py-2 rounded-md">
                   Register
@@ -273,6 +283,15 @@ const LoginPage: React.FC = () => {
           )}
           {isForgetting && (
             <>
+            <div className="mb-2">
+                <input
+                  type="newPassword"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="border text-black rounded-md px-4 py-2 w-72"
+                />
+              </div>
               <div className="mb-2">
                 <button onClick={handleForgetPassword} disabled={loading} className="bg-blue-500 text-white px-4 py-2 rounded-md">
                   Send OTP
