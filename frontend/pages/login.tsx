@@ -283,7 +283,7 @@ const LoginPage: React.FC = () => {
                 <input
                   type="password"
                   placeholder="New Password"
-                  value={password}
+                  value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="border text-black rounded-md px-4 py-2 w-72"
                 />
