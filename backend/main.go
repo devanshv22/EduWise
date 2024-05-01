@@ -10,6 +10,8 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"os/signal"
+	"regexp"
 	"strconv"
 	"time"
 
@@ -68,6 +70,8 @@ type Course struct {
 }
 
 func main() {
+	defer sendShutdownNotification()
+
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -96,6 +100,8 @@ func main() {
 
 	r := gin.Default()
 
+	r.Use(gin.Recovery())
+
 	r.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
@@ -116,13 +122,37 @@ func main() {
 	r.POST("/api/login", login)
 	r.POST("/api/register", register)
 	r.POST("/api/verify", verifyOTP)
+	r.POST("/api/resend", resendOTP)
+	r.POST("/api/forget", forgetPassword)
 	r.GET("/api/isLoggedIn", isLoggedIn)
 	r.GET("/api/main", isAuthenticated, isLoggedIn, mainPageHandler)
 	r.GET("/api/download/:fileID", downloadFile)
 
-	if err := r.Run("0.0.0.0:8080"); err != nil {
-		log.Fatalf("Failed to run server: %v", err)
+	server := &http.Server{
+		Addr:    "0.0.0.0:8080",
+		Handler: r,
 	}
+
+	go func() {
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Failed to run server: %v", err)
+		}
+	}()
+
+	// Graceful shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	log.Println("Shutting down server...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		log.Fatalf("Server shutdown error: %v", err)
+	}
+
+	log.Println("Server gracefully stopped")
 }
 
 func generateFileLink(fileID string) string {
@@ -332,20 +362,15 @@ func register(c *gin.Context) {
 		return
 	}
 
-	// Check if the username already exists in the database
-	count, err := registeredUsers.CountDocuments(ctx, bson.M{"username": user.Username})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check username availability"})
-		return
-	}
-	if count > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
-		return
-	}
-
 	// Generate a random 6-digit OTP
 	rand.Seed(time.Now().UnixNano())
 	otp := strconv.Itoa(rand.Intn(900000) + 100000) // Generates a random number between 100000 and 999999
+
+	// Send OTP to the user's email address
+	if err := sendVerificationOTP(user.Username, otp); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send verification OTP"})
+		return
+	}
 
 	// Hash the password before storing it in the database
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
@@ -363,12 +388,6 @@ func register(c *gin.Context) {
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register user"})
-		return
-	}
-
-	// Send OTP to the user's email address
-	if err := sendVerificationOTP(user.Username, otp); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send verification OTP"})
 		return
 	}
 
@@ -412,6 +431,11 @@ func verifyOTP(c *gin.Context) {
 }
 
 func sendVerificationOTP(email, otp string) error {
+	// Validate email format
+	if !isValidEmail(email) {
+		return fmt.Errorf("invalid format")
+	}
+
 	// SMTP configuration
 	smtpHost := "smtp.gmail.com"
 	smtpPort := 587
@@ -442,11 +466,96 @@ func sendVerificationOTP(email, otp string) error {
 	auth := smtp.PlainAuth("", smtpUsername, smtpPassword, smtpHost)
 	err := smtp.SendMail(fmt.Sprintf("%s:%d", smtpHost, smtpPort), auth, from, []string{email}, msg.Bytes())
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Failed to send verification OTP email:", err)
 		return err
 	}
 
 	return nil
+}
+
+// Function to validate email format
+func isValidEmail(email string) bool {
+	// This regex pattern is a simple validation for email format
+	// You may use a more comprehensive validation method if required
+	// This pattern allows most common email formats but may not cover all cases
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	return emailRegex.MatchString(email)
+}
+
+func resendOTP(c *gin.Context) {
+	var user struct {
+		Username string `json:"username" binding:"required"`
+	}
+
+	if err := c.BindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Query the database to find the user by username
+	var dbUser UserRegistration
+	err := registeredUsers.FindOne(ctx, bson.M{"username": user.Username}).Decode(&dbUser)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Generate a new OTP
+	rand.Seed(time.Now().UnixNano())
+	newOTP := strconv.Itoa(rand.Intn(900000) + 100000) // Generates a random number between 100000 and 999999
+
+	// Update the OTP in the database
+	_, err = registeredUsers.UpdateOne(ctx, bson.M{"username": user.Username}, bson.M{"$set": bson.M{"otp": newOTP}})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to resend OTP"})
+		return
+	}
+
+	// Send the new OTP to the user's email address
+	if err := sendVerificationOTP(user.Username, newOTP); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send verification OTP"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "New OTP sent successfully"})
+}
+
+func forgetPassword(c *gin.Context) {
+	var user struct {
+		Username    string `json:"username" binding:"required"`
+		NewPassword string `json:"newPassword" binding:"required"`
+	}
+
+	if err := c.BindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Generate a random 6-digit OTP
+	rand.Seed(time.Now().UnixNano())
+	otp := strconv.Itoa(rand.Intn(900000) + 100000) // Generates a random number between 100000 and 999999
+
+	// Send OTP to the user's email address
+	if err := sendVerificationOTP(user.Username, otp); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send verification OTP"})
+		return
+	}
+
+	// Hash the new password before storing it in the database
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to hash new password"})
+		return
+	}
+
+	// Store the new OTP and hashed password in the database
+	_, err = registeredUsers.UpdateOne(ctx, bson.M{"username": user.Username}, bson.M{"$set": bson.M{"otp": otp, "password": string(hashedPassword)}})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update OTP and password"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "OTP sent successfully. Please verify to complete the password reset process"})
 }
 
 func login(c *gin.Context) {
@@ -564,4 +673,43 @@ func mainPageHandler(c *gin.Context) {
 
 	// Your main page logic goes here
 	c.JSON(http.StatusOK, gin.H{"message": "Welcome to the main page", "username": username})
+}
+
+func sendShutdownNotification() {
+	// SMTP configuration
+	smtpHost := "smtp.gmail.com"
+	smtpPort := 587
+	smtpUsername := os.Getenv("SMTP_USERNAME")
+	smtpPassword := os.Getenv("SMTP_PASSWORD")
+	from := smtpUsername         // Change this to your email address
+	to := "devanshv17@gmail.com" // Change this to the recipient's email address
+
+	// Email content
+	subject := "Server Shutdown Notification"
+	body := "Your server has been shut down unexpectedly."
+
+	// Constructing email headers
+	headers := make(map[string]string)
+	headers["From"] = from
+	headers["To"] = to
+	headers["Subject"] = subject
+	headers["MIME-Version"] = "1.0"
+	headers["Content-Type"] = "text/plain; charset=\"utf-8\""
+	headers["Content-Transfer-Encoding"] = "base64"
+
+	var msg bytes.Buffer
+	for key, value := range headers {
+		msg.WriteString(key + ": " + value + "\r\n")
+	}
+	msg.WriteString("\r\n" + base64.StdEncoding.EncodeToString([]byte(body)))
+
+	// Connect to the SMTP server with TLS
+	auth := smtp.PlainAuth("", smtpUsername, smtpPassword, smtpHost)
+	err := smtp.SendMail(fmt.Sprintf("%s:%d", smtpHost, smtpPort), auth, from, []string{to}, msg.Bytes())
+	if err != nil {
+		log.Println("Failed to send shutdown notification email:", err)
+		return
+	}
+
+	log.Println("Shutdown notification email sent successfully")
 }
