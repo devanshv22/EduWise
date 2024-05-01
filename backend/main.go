@@ -362,6 +362,18 @@ func register(c *gin.Context) {
 		return
 	}
 
+	// Check if the username already exists in the database
+	var existingUser UserRegistration
+	err := registeredUsers.FindOne(ctx, bson.M{"username": user.Username}).Decode(&existingUser)
+	if err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Username already registered"})
+		return
+	} else if err != mongo.ErrNoDocuments {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
+		return
+	}
+
+	// Proceed with registration
 	// Generate a random 6-digit OTP
 	rand.Seed(time.Now().UnixNano())
 	otp := strconv.Itoa(rand.Intn(900000) + 100000) // Generates a random number between 100000 and 999999

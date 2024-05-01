@@ -38,8 +38,8 @@ const LoginPage: React.FC = () => {
     setError(null);
   
     try {
-      // Check if username is already registered
-      const checkResponse = await fetch('http://3.110.204.153:8080/api/checkUsername', {
+      // Check if the username already exists
+      const checkResponse = await fetch('http://3.110.204.153:8080/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -47,34 +47,30 @@ const LoginPage: React.FC = () => {
         body: JSON.stringify({ username: username + '@iitk.ac.in' }),
       });
   
-      if (checkResponse.ok) {
-        const responseData = await checkResponse.json();
-        if (!responseData.isRegistered) {
-          // Username is not registered, proceed with registration
-          const response = await fetch('http://3.110.204.153:8080/api/register', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ username: username + '@iitk.ac.in', password }),
-          });
+      if (!checkResponse.ok) {
+        const errorMessage = await checkResponse.text();
+        setError(errorMessage || 'Username already registered');
+        setLoading(false);
+        return;
+      }
   
-          if (response.ok) {
-            setIsRegistering(true); // Show OTP field after successful registration
-            alert('OTP sent successfully'); // Set success message
-            setError(null); // Clear any previous errors
-            setOtpSentTime(Date.now()); // Record the time when OTP is sent
-          } else {
-            const errorMessage = await response.text();
-            setError(errorMessage || 'Registration failed. Please try again.');
-          }
-        } else {
-          // Username is already registered
-          setError('Username is already registered.');
-        }
+      // Proceed with registration
+      const response = await fetch('http://3.110.204.153:8080/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: username + '@iitk.ac.in', password }),
+      });
+  
+      if (response.ok) {
+        setIsRegistering(true); // Show OTP field after successful registration
+        alert('OTP sent successfully'); // Set success message
+        setError(null); // Clear any previous errors
+        setOtpSentTime(Date.now()); // Record the time when OTP is sent
       } else {
-        // Error in checking username
-        setError('Error checking username. Please try again.');
+        const errorMessage = await response.text();
+        setError(errorMessage || 'Registration failed. Please try again.');
       }
     } catch (error) {
       setError('An error occurred. Please try again.');
@@ -82,6 +78,7 @@ const LoginPage: React.FC = () => {
   
     setLoading(false);
   };
+  
   
   const handleVerifyOTP = async () => {
     setLoading(true);
