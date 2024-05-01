@@ -120,17 +120,18 @@ const LoginPage: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username: username + '@iitk.ac.in', newPassword }),
+        body: JSON.stringify({
+          username: username + '@iitk.ac.in',
+          newPassword: newPassword, // Include the newPassword field
+        }),
       });
   
       if (response.ok) {
-        setIsForgetting(true); // Show OTP field after successful forget password request
-        alert('OTP sent successfully'); // Set success message
-        setError(null); 
-        setOtpSentTime(Date.now());
+        const responseData = await response.json();
+        alert(responseData.message); // Display success message
       } else {
         const errorMessage = await response.text();
-        setError(errorMessage || 'Forget password request failed. Please try again.');
+        setError(errorMessage || 'Password reset failed. Please try again.');
       }
     } catch (error) {
       setError('An error occurred. Please try again.');
