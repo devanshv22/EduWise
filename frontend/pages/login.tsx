@@ -38,6 +38,8 @@ const LoginPage: React.FC = () => {
     setError(null);
   
     try {
+      console.log('Username:', username);
+      console.log('Password:', password); 
       // Check if the username already exists
       const checkResponse = await fetch('http://3.110.204.153:8080/api/register', {
         method: 'POST',
