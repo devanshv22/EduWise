@@ -38,24 +38,6 @@ const LoginPage: React.FC = () => {
     setError(null);
   
     try {
-      console.log('Username:', username);
-      console.log('Password:', password); 
-      // Check if the username already exists
-      const checkResponse = await fetch('http://3.110.204.153:8080/api/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username: username + '@iitk.ac.in' }),
-      });
-  
-      if (!checkResponse.ok) {
-        const errorMessage = await checkResponse.text();
-        setError(errorMessage || 'Username already registered');
-        setLoading(false);
-        return;
-      }
-  
       // Proceed with registration
       const response = await fetch('http://3.110.204.153:8080/api/register', {
         method: 'POST',
@@ -71,8 +53,8 @@ const LoginPage: React.FC = () => {
         setError(null); // Clear any previous errors
         setOtpSentTime(Date.now()); // Record the time when OTP is sent
       } else {
-        const errorMessage = await response.text();
-        setError(errorMessage || 'Registration failed. Please try again.');
+        const errorData = await response.json(); // Fetch error message from the backend
+        setError(errorData.message || 'Registration failed. Please try again.');
       }
     } catch (error) {
       setError('An error occurred. Please try again.');
@@ -80,6 +62,7 @@ const LoginPage: React.FC = () => {
   
     setLoading(false);
   };
+  
   
   
   const handleVerifyOTP = async () => {
