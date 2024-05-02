@@ -54,7 +54,7 @@ const LoginPage: React.FC = () => {
         setOtpSentTime(Date.now()); // Record the time when OTP is sent
       } else {
         const errorData = await response.json(); // Fetch error message from the backend
-        setError(errorData.message || 'Registration failed. Please try again.');
+        setError(errorData.message);
       }
     } catch (error) {
       setError('An error occurred. Please try again.');
