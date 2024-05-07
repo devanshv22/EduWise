@@ -39,7 +39,7 @@ const LoginPage: React.FC = () => {
   
     try {
       // Proceed with registration
-      const response = await fetch('http://3.110.204.153:8080/api/register', {
+      const response = await fetch('https://edu-wise-backend.onrender.com/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ const LoginPage: React.FC = () => {
     setError(null);
   
     try {
-      const response = await fetch('http://3.110.204.153:8080/api/verify', {
+      const response = await fetch('https://edu-wise-backend.onrender.com/api/verify', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,7 +97,7 @@ const LoginPage: React.FC = () => {
     setError(null);
   
     try {
-      const response = await fetch('http://3.110.204.153:8080/api/forget', {
+      const response = await fetch('https://edu-wise-backend.onrender.com/api/forget', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ const LoginPage: React.FC = () => {
     setError(null);
   
     try {
-      const response = await fetch('http://3.110.204.153:8080/api/login', {
+      const response = await fetch('https://edu-wise-backend.onrender.com/api/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -157,7 +157,7 @@ const LoginPage: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch('http://3.110.204.153:8080/api/resend', {
+      const response = await fetch('https://edu-wise-backend.onrender.com/api/resend', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

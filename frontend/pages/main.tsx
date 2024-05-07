@@ -31,7 +31,7 @@ const MainPage: React.FC = () => {
 
     const fetchUploadedFiles = async () => {
         try {
-            const response = await axios.get<UploadedFile[]>('http://3.110.204.153:8080/api/fetch');
+            const response = await axios.get<UploadedFile[]>('https://edu-wise-backend.onrender.com/api/fetch');
             if (response.status === 200) {
                 setUploadedFiles(response.data || []);
                 setFilteredFiles(response.data || []); // Initialize filteredFiles state with all files

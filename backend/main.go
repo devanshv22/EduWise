@@ -157,7 +157,7 @@ func main() {
 
 func generateFileLink(fileID string) string {
 	// Assuming your frontend is hosted at http://3.110.204.153:3000
-	return fmt.Sprintf("http://3.110.204.153:8080/api/download/%s?download=true", fileID)
+	return fmt.Sprintf("https://edu-wise-backend.onrender.com/api/download/%s?download=true", fileID)
 }
 
 func uploadFile(c *gin.Context) {
