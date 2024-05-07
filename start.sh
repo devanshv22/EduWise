@@ -32,3 +32,6 @@ cd ..
 # Run the frontend on port 3000
 cd frontend
 npm start -- --port 3000 &
+
+# Sleep to keep the script running
+sleep infinity
