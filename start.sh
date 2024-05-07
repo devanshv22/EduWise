@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Navigate to backend directory
 cd backend
 
@@ -27,9 +29,6 @@ cd ..
 # Run the backend
 ./backend/app -port 8080 &
 
-# Run the frontend
+# Run the frontend on port 3000
 cd frontend
-npm start &
-
-# Open the main link (localhost:3000)
-xdg-open http://localhost:3000
+npm start -- --port 3000 &
