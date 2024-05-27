@@ -295,6 +295,7 @@ func fetchFaculty(c *gin.Context) {
 	}
 	defer cursor.Close(ctx)
 
+	//hello//
 	for cursor.Next(ctx) {
 		var faculty Faculty
 		if err := cursor.Decode(&faculty); err != nil {
